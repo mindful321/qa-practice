@@ -1,45 +1,38 @@
-# QA Practice Workspace
+# CLAUDE.md
 
-This workspace is for practicing website testing. Every site listed in `SITES.md` is a public site built for testing practice. Do not test any other site unless the user says they own it or have permission to test it.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## The testing loop (repeat it for each site or feature)
-1. **Explore.** Click through the feature, either manually or with the claude-in-chrome skill. Write down the flows, inputs, and rules.
-2. **Write test cases.** Put them in `test-cases/<site>.md` using the template below. Cover positive, negative, boundary, and UI checks.
-3. **Automate.** Write the specs in `tests/<site>.spec.ts`. Use one `test()` per test case, and start each test name with the case ID.
-4. **Execute.** Run `npx playwright test tests/<site>.spec.ts`.
-5. **Report.** Write the run results to `test-runs/YYYY-MM-DD-<site>.md`. Create one bug report per defect in `bug-reports/<SITE>-BUG-NNN.md`.
-
-## Conventions
-- **Case IDs:** `<SITE>-<AREA>-<NNN>`, e.g. `SD-LOGIN-003`. Site prefixes are listed in `SITES.md`.
-- **Locators:** in order of preference, use `getByRole`, `getByLabel`, `getByPlaceholder`, then `getByTestId` (this reads `data-test`). Avoid CSS/XPath chains.
-- **Waits:** never use `waitForTimeout`. Rely on auto-waiting and web-first assertions (`await expect(...)`).
-- **Isolation:** each test must be able to run on its own. Don't share state between tests.
-- **Known bugs:** mark a test that reproduces a known defect with `test.fail()` and name its bug ID in a comment. The suite stays green, and Playwright warns you if the bug ever gets fixed.
-- **Priority:** P1 = blocks the core flow, P2 = important, P3 = minor or cosmetic.
-- **Severity (bugs):** Critical / Major / Minor / Trivial.
+## What this repo is
+A QA practice workspace. It holds manual test cases, Playwright UI and API automation, bug reports, and run reports for public practice sites. The user is learning QA and delegates testing work to Claude. Every site in `SITES.md` is built for testing practice. Do not test any other site unless the user says they own it or have permission to test it.
 
 ## Commands
-- `npm test`: run everything
-- `npx playwright test tests/saucedemo.spec.ts --headed`: watch the browser
-- `npx playwright test -g "SD-LOGIN"`: run cases by ID prefix
-- `npm run test:ui`: interactive UI mode
-- `npm run report`: open the HTML report (it includes screenshots and traces of failures)
-- `npx playwright codegen <url>`: record clicks and generate locators
+Node is installed at `C:\Program Files\nodejs`. If `npm` or `npx` isn't found in a fresh shell, prepend that folder to PATH.
+- `npm test`: run all specs (Chromium only)
+- `npx playwright test tests/saucedemo.spec.ts`: run one site
+- `npx playwright test -g "SD-LOGIN-003"`: run a single case, or a group by ID prefix (e.g. `-g "RB-"`)
+- `npm run test:headed` / `npm run test:ui`: watch the browser / interactive debugging
+- `npm run report`: open the HTML report. Failures keep a screenshot, video and trace under `test-results/`
+- `npx playwright show-trace <path>/trace.zip`: step through a failed test
+- `npx playwright codegen <url>`: record actions to discover locators
 
-## Templates
+There is no build or lint step. TypeScript is run directly by Playwright.
 
-### Test case
-```
-### <ID>: <Title>
-- **Priority:** P1/P2/P3
-- **Type:** Positive / Negative / Boundary / UI
-- **Preconditions:** ...
-- **Test data:** ...
-- **Steps:**
-  1. ...
-- **Expected result:** ...
-- **Automated:** yes (tests/<file>) / no
-```
+## Architecture
+- **One site, four artifacts, all linked by case ID.** For a site prefix like `SD`, the files are: `test-cases/<site>.md` (manual cases), `tests/<site>.spec.ts` (one `test()` per case, named `<ID> <title>`), `bug-reports/<PREFIX>-BUG-NNN.md`, and `test-runs/YYYY-MM-DD-<site>.md`. When a case changes, keep all of these in sync. Templates are `bug-reports/_TEMPLATE.md` and `test-runs/_TEMPLATE.md`.
+- **Case ID format:** `<PREFIX>-<AREA>-<NNN>`. Site prefixes are in `SITES.md` (SD = SauceDemo, TI = The Internet, RB = Restful-Booker).
+- **`playwright.config.ts` has no global `baseURL`.** Each spec sets its own with `test.use({ baseURL })`, except `saucedemo.spec.ts`, which uses a `URL` constant. `testIdAttribute` is `data-test`, so `getByTestId()` matches `data-test="..."`.
+- **API tests** (`restful-booker.spec.ts`) use Playwright's `request` fixture, not a browser. A write needs the header `Cookie: token=<token>` from `POST /auth`. The API is shared by everyone, so every test creates its own booking with random names and never depends on existing data.
+- **Known defects** are reproduced with `test.fail(true, '<BUG-ID>: ...')`. They count as passing while the bug exists. If one starts reporting "Expected to fail, but passed", either the bug was fixed or the test is broken. Investigate before removing the annotation.
 
-### Bug report: see `bug-reports/_TEMPLATE.md`
-### Test run report: see `test-runs/_TEMPLATE.md`
+## Test-writing rules learned from this repo
+- **Guard against empty matches.** Before asserting on a collection, check its count (`toHaveCount(n)`). SD-PROB-001 once passed silently because a stale CSS locator matched 0 images.
+- **Confirm the failure reason for expected-fail tests** outside Playwright (curl, DevTools) before filing a bug. A `test.fail()` test can fail for the wrong reason.
+- **App bug or test bug?** Decide before reporting. TI-FORM-003 failed because pressing Enter submitted the form and reloaded the page; the site itself was fine.
+- **API tests check side effects, not only status codes.** For example, after a DELETE, a GET should return 404.
+- **Locators:** use `getByRole` / `getByLabel` / `getByPlaceholder` first, then `getByTestId`. Never use `waitForTimeout`. Rely on web-first `expect`.
+
+## The testing loop for a new site or feature
+Explore (manually, or with the claude-in-chrome skill) → write cases → automate → run → write the run report and bug reports → commit.
+
+## Git
+The remote is the private repo https://github.com/mindful321/qa-practice, branch `main`. `gh` is at `C:\Program Files\GitHub CLI\gh.exe` and is already logged in. Commit only when the user asks.

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-wait-for-timeout.js\"",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" block_fixed_sleeps.py",
             "timeout": 10
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/allowed-sites.js\"",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" allowed_sites.py",
             "timeout": 10
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-spec.js\"",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" check_tests.py",
             "timeout": 60
           }
         ]

@@ -11,7 +11,7 @@ The user is preparing for a **QA Engineer interview that focuses on AI skills an
 ## Before explaining
 Read the real material. Never describe work from memory or invent it:
 1. `SITES.md`: which sites exist and which were actually tested (a site counts as tested only if it has a spec in `tests/`)
-2. For each tested site: `test-cases/<site>.md`, `tests/<site>.spec.ts`, its `bug-reports/<PREFIX>-BUG-*.md`, and `test-runs/*<site>*.md`
+2. For each tested site: `test-cases/<site>.md`, `tests/test_<site>.py`, its `bug-reports/<PREFIX>-BUG-*.md`, and `test-runs/*<site>*.md`
 3. `CLAUDE.md`, for the conventions and lessons learned
 
 If the user names one site, cover only that site. Otherwise cover each tested site in turn.
@@ -31,16 +31,16 @@ Use plain language. Short sentences. Define every technical term the first time 
 5. **What went wrong in my own testing and what I learned.** Use the "Lessons" sections in `test-runs/`. These make the strongest interview stories, because they show judgment.
 6. **How I'd say it in an interview.** A 30–60 second spoken answer in the first person ("I tested..."), using **STAR** (Situation, Task, Action, Result).
 
-## Python translation (important)
-The specs in this repo are **TypeScript**, but the interview is about **Python**. For every code snippet you show, also show the Python equivalent using `pytest` + `playwright` (sync API), and point out the differences:
-- `test('ID ...', async ({ page }) => {...})` becomes `def test_id(page):` (a pytest function, with no async/await)
-- `await expect(locator).toHaveText(x)` becomes `expect(locator).to_have_text(x)` (snake_case)
-- `test.beforeEach` becomes a pytest **fixture**
-- `test.fail()` becomes `@pytest.mark.xfail(reason="BUG-ID")`
-- the API `request` fixture becomes `playwright.request.new_context(base_url=...)`, or the `requests` library
-- running one test: `pytest -k "login"`
+## Python concepts to explain (important)
+The tests are written in **Python** with `pytest`, `pytest-playwright` (sync API) and `requests`. When showing code, explain the Python and pytest ideas an interviewer will ask about:
+- a test is a plain function whose name starts with `test_`, and pytest finds it automatically
+- **fixtures** (`page`, `api`, `logged_in`) give a test what it needs, and `yield` fixtures clean up afterwards
+- `expect(locator).to_have_text(x)` is a web-first assertion that retries until it passes or times out; plain `assert` checks a value once
+- `@pytest.mark.xfail(reason="BUG-ID")` marks a known bug, and `xfail_strict` makes a fixed bug show up as a failure
+- `requests` for API tests: `res.status_code`, `res.json()`, `json=` for the body, `headers=` for the auth cookie
+- running one test: `pytest -k sd_login_003`
 
-Remind the user they should be able to write these basics in Python themselves. Offer to port a site's suite to Python if they haven't yet.
+The repo started in TypeScript and was ported to Python (see git history). Remind the user they should be able to write these basics in Python themselves.
 
 ## AI skills angle
 Interviewers for "QA with AI skills" ask how the candidate *uses* AI and how they *check* its work. Draw on what really happened in this repo:

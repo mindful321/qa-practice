@@ -1,0 +1,6 @@
+# Lint settings for the PostToolUse lint hook (.claude/hooks/lint_and_typecheck.py).
+line-length = 130
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP"]

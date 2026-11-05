@@ -2,3 +2,6 @@ pytest>=8.3
 pytest-playwright>=0.7
 pytest-html>=4.1
 requests>=2.32
+ruff>=0.8
+mypy>=1.13
+types-requests>=2.32

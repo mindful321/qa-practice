@@ -33,7 +33,7 @@ Settings live in `pytest.ini`. There is no build or lint step.
 - **Locators:** use `get_by_role` / `get_by_label` / `get_by_placeholder` first, then `get_by_test_id`. Never use `wait_for_timeout()` or `time.sleep()`. Rely on web-first `expect`.
 
 ## Hooks
-`.claude/settings.json` runs Python hooks from `.claude/hooks/` (through `run.sh`, which uses the `.venv` Python): `allowed_sites.py` blocks test traffic to sites not in `SITES.md`, `block_fixed_sleeps.py` rejects fixed sleeps in `tests/`, and `check_tests.py` runs `pytest --collect-only` after a test file is edited. If a hook blocks you, fix the cause; don't work around it.
+`.claude/settings.json` runs Python hooks from `.claude/hooks/` (through `run.sh`, which uses the `.venv` Python): `allowed_sites.py` blocks test traffic to sites not in `SITES.md`, `block_fixed_sleeps.py` rejects fixed sleeps in `tests/`, and `check_tests.py` runs `pytest --collect-only` after a test file is edited, `lint_and_typecheck.py` runs ruff (`ruff.toml`) and mypy (`mypy.ini`) on every edited `.py` file, and `run_tests_on_stop.py` (Stop hook) runs the full suite before a turn ends whenever `.py` files or `pytest.ini` have uncommitted changes, blocking the stop on failure (~3 min). If a hook blocks you, fix the cause; don't work around it.
 
 ## The testing loop for a new site or feature
 Explore (manually, or with the claude-in-chrome skill) → write cases → automate → run → write the run report and bug reports → commit.
